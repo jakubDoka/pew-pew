@@ -21,7 +21,7 @@ import java.text.*;
 import java.util.*;
 
 public class Shooter {
-    public static final String dir = "config/mods/main.java.pewpew/";
+    public static final String dir = "config/mods/pewpew/";
     public static final String errors = dir + "errors/";
     public static final String config = dir + "config.json";
 

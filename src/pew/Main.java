@@ -2,40 +2,119 @@ package pew;
 
 import arc.util.*;
 import mindustry.content.*;
+import mindustry.gen.*;
 import mindustry.mod.*;
+import mindustry.type.*;
 import pew.Shooter.*;
 
 import java.io.*;
 import java.lang.reflect.*;
+import java.util.*;
 
 import static pew.Shooter.Util.load;
 
 public class Main extends Plugin {
-    public static Shooter shooter = new Shooter();
+    public static Shooter shooter;
+
+    @Override
+    public void init(){
+        shooter = new Shooter();
+    }
 
     @Override
     public void registerServerCommands(CommandHandler handler){
         handler.register("pew-content", "<units/bullets/items>", "shows all possible options for game content relevant to plugin config", (args) -> {
-            switch(args[0]){
-                case "units":
-                    Log.info(listFields(UnitTypes.class));
-                    break;
-                case "bullets":
-                    Log.info(listFields(Bullets.class));
-                    break;
-                case "items":
-                    Log.info(listFields(Items.class));
-                    break;
-                default:
-                    Log.info("wrong option");
-                    ;
-            }
+            String content = getContent(args[0]);
+            Log.info((content != null ? content : "wrong option"));
         });
 
         handler.register("pew-load", "reloads configuration", (args) -> {
             shooter.load();
             Log.info("loaded");
         });
+    }
+
+    @Override
+    public void registerClientCommands(CommandHandler handler) {
+        handler.<Player>register("pew-info", "[unit] [item]", "shows info about implemented weapons", (args, player) -> {
+            StringBuilder sb = new StringBuilder();
+            HashMap<Item, Shooter.Weapon> items = null;
+            Shooter.Weapon weapon = null;
+            if(args.length == 0){
+                sb.append(makeTitle("units with weapons"));
+                for(UnitType u : shooter.weapons.keySet()){
+                    sb.append(u.name).append("\n");
+                }
+            }
+
+            if(args.length >= 1) {
+                try{
+                    items = shooter.weapons.get((UnitType)Shooter.Util.getProp(UnitTypes.class, args[0]));
+                    if(items == null) {
+                        player.sendMessage("this unit is not supported by config");
+                        return;
+                    }
+                } catch(NoSuchFieldException ex){
+                    player.sendMessage(ex.getMessage());
+                    return;
+                }
+            }
+
+            if(args.length == 2) {
+                try{
+                    weapon = items.get((Item)Shooter.Util.getProp(Items.class, args[1]));
+                    if(weapon == null) {
+                        player.sendMessage("this item is not supported by config");
+                        return;
+                    }
+                } catch(NoSuchFieldException ex) {
+                    player.sendMessage(ex.getMessage());
+                    return;
+                }
+                sb.append(makeTitle("weapon stats"));
+                for(Field f : Shooter.Stats.class.getFields()) {
+                    try{
+                        sb.append(f.getName()).append(": ").append(f.get(weapon.stats)).append("\n");
+                    }catch(IllegalAccessException e){
+                        player.sendMessage("internal server error, sucks...");
+                        return;
+                    }
+                }
+            } else if (args.length == 1){
+                sb.append(makeTitle("items in use"));
+                for(Item i : items.keySet()){
+                    sb.append(i.name).append("\n");
+                }
+            }
+
+            Call.infoMessage(player.con, sb.toString());
+        });
+
+        handler.<Player>register("pew-content", "<units/bullets/items>", "shows all possible units and items that can be related to weapon", (args, player) -> {
+            String content = getContent(args[0]);
+            if(content != null) {
+                Call.infoMessage(player.con, makeTitle(args[0]) + content);
+            } else {
+                player.sendMessage("wrong option");
+            }
+        });
+    }
+
+    public String makeTitle(String text) {
+        return "[orange]==" + text.toUpperCase() + "==[]\n\n";
+    }
+
+    public String getContent(String type) {
+        switch(type){
+            case "units":
+                return listFields(UnitTypes.class);
+            case "bullets":
+                return listFields(Bullets.class);
+            case "items":
+                return listFields(Items.class);
+            default:
+                return null;
+        }
     }
 
     public static <T> String listFields(Class<T> c) {

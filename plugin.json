@@ -1,7 +1,7 @@
 {
-  "name": "<TWS>plugin",
+  "name": "pewpew",
   "author": "mlokis",
-  "main": "pewpew.Main",
-  "description": "THe worst plugin ewer made.",
+  "main": "pew.Main",
+  "description": "makes lot of pewpew",
   "version": 1.0
 }

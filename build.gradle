@@ -13,13 +13,7 @@ repositories{
 
 ext{
     //the build number that this plugin is made for
-    mindustryVersion = 'v123'
-}
-
-repositories {
-    flatDir {
-        dirs 'libs'
-    }
+    mindustryVersion = 'v124'
 }
 
 dependencies{
@@ -31,12 +25,9 @@ dependencies{
 
 jar {
     archiveFileName = "${project.archivesBaseName}.jar"
-    from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-    } {
-        exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+    from{
+        configurations.runtimeClasspath.collect{it.isDirectory() ? it : zipTree(it)}
     }
-
 
     from(rootDir) {
         include "plugin.json"
