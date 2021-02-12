@@ -1,9 +1,9 @@
-# pewpew
+# Weapon booster
 
 Pewpew adds extra content to game, it allows you to define new weapons that can be activated when having items on hand with
-any unit. There is around 600 possible configurations and space for unique weapons. Plugin is light but powerful and getting
+any unit. Every unit can have unique weapon for each item it uses. Plugin is light but powerful and getting
 it running requires same procedure as any other plugin. Let's go trough config syntax, as that's how you add content to game.
-Now `important thing to note` any unit that has items in it will be able to shoot with weapon, if it is defined in config. 
+Now `important thing to note` any unit that has items in it will be able to shoot with a weapon, if it is defined in a config. 
 
 ## config
 
@@ -62,4 +62,4 @@ with their exact names you have to use wia `pew-content <units/items>`.
 ## contribution
 
 Plugin is small, so it's easy to learn how it works, if you feel like it needs an additional feature write an issue first
-and then after approval make a pull request
+and then after approval make a pull request.
