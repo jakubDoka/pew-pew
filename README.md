@@ -44,7 +44,7 @@ Then there is `inaccuracy`, if you set it to 180, weapon will shoot in random di
 
 Next we have `damageMultiplier`, it does what is says just set it to 10000, and you will see.
 
-`reload` sets delay between shots, so 1.0 is 1 second and 0.0 is 60 * second or more or less (depends on fps).
+`reload` sets delay between shots, so 1.0 is 1 shot per second and 0.0 is 60 shots per second or more or less (depends on fps).
 
 `bulletsPerShot` sets how many bullets gun will fire per one reload, so combination of inaccuracy and big bps will 
 create shotgun.
