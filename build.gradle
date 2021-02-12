@@ -1,0 +1,44 @@
+apply plugin: "java"
+
+version '1.0'
+
+sourceCompatibility = 1.8
+
+sourceSets.main.java.srcDirs = ["src"]
+
+repositories{
+    mavenCentral()
+    maven{ url 'https://www.jitpack.io' }
+}
+
+ext{
+    //the build number that this plugin is made for
+    mindustryVersion = 'v123'
+}
+
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
+
+dependencies{
+    implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.0.1'
+    compileOnly "com.github.Anuken.Arc:arc-core:$mindustryVersion"
+    compileOnly "com.github.Anuken.Mindustry:core:$mindustryVersion"
+}
+
+jar {
+    archiveFileName = "${project.archivesBaseName}.jar"
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    } {
+        exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+    }
+
+
+    from(rootDir) {
+        include "plugin.json"
+    }
+}
