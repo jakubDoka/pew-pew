@@ -149,7 +149,8 @@ public class Shooter {
             load(config);
             save(configyaml);
             new File(config).delete();
-        } else {
+        } 
+        else {
             load(configyaml);
             save(config);
             new File(configyaml).delete();

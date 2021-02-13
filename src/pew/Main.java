@@ -17,6 +17,7 @@ import static pew.Shooter.Util.load;
 
 public class Main extends Plugin {
     public static Shooter shooter;
+    public static Boolean debug = false;
 
     @Override
     public void init(){
@@ -35,10 +36,6 @@ public class Main extends Plugin {
             Log.info("loaded");
         });
 
-        handler.register("pew-yamlmode", "show config file mode", (args) -> {
-            Log.info("yamlmode=" + shooter.yamlmode());
-        });
-
         handler.register("pew-yamlmode","<true/false>" , "set config file mode", (args) -> {
             String content = args[0];
             if(content != null) {
@@ -52,9 +49,15 @@ public class Main extends Plugin {
             Log.info("yamlmode=" + shooter.yamlmode());
         });
 
-        handler.register("pew-test", "error log", (args) -> {
-            Logging.log(new IOException("log file test"));
-        });
+        if(debug) {
+            handler.register("pew-mode", "show config file mode", (args) -> {
+                Log.info("yamlmode=" + shooter.yamlmode());
+            });
+    
+            handler.register("pew-test", "error log", (args) -> {
+                Logging.log(new IOException("log file test"));
+            });
+        }
     }
 
     @Override
