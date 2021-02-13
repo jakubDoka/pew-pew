@@ -40,43 +40,33 @@ public class Main extends Plugin {
     public void registerClientCommands(CommandHandler handler) {
         handler.<Player>register("pew-info", "[unit] [item]", "shows info about implemented weapons", (args, player) -> {
             StringBuilder sb = new StringBuilder();
-            HashMap<Item, Shooter.Weapon> items = null;
-            Shooter.Weapon weapon = null;
+            HashMap<String, String> items = null;
             if(args.length == 0){
                 sb.append(makeTitle("units with weapons"));
-                for(UnitType u : shooter.weapons.keySet()){
-                    sb.append(u.name).append("\n");
+                for(String u : shooter.cfg.links.keySet()){
+                    sb.append(u).append("\n");
                 }
             }
 
             if(args.length >= 1) {
-                try{
-                    items = shooter.weapons.get((UnitType)Shooter.Util.getProp(UnitTypes.class, args[0]));
-                    if(items == null) {
-                        player.sendMessage("this unit is not supported by config");
-                        return;
-                    }
-                } catch(Exception ex){
-                    player.sendMessage(ex.getMessage());
+                items = shooter.cfg.links.get(args[0]);
+                if(items == null) {
+                    player.sendMessage("this unit is not supported by config");
                     return;
                 }
             }
 
             if(args.length == 2) {
-                try{
-                    weapon = items.get((Item)Shooter.Util.getProp(Items.class, args[1]));
-                    if(weapon == null) {
-                        player.sendMessage("this item is not supported by config");
-                        return;
-                    }
-                } catch(Exception ex) {
-                    player.sendMessage(ex.getMessage());
+                String weapon = items.get(args[1]);
+                if(weapon == null) {
+                    player.sendMessage("this item is not supported by config");
                     return;
                 }
+                Stats stats = shooter.cfg.def.get(weapon);
                 sb.append(makeTitle("weapon stats"));
                 for(Field f : Shooter.Stats.class.getFields()) {
                     try{
-                        sb.append(f.getName()).append(": ").append(f.get(weapon.stats)).append("\n");
+                        sb.append(f.getName()).append(": ").append(f.get(stats)).append("\n");
                     }catch(IllegalAccessException e){
                         player.sendMessage("internal server error, sucks...");
                         return;
@@ -84,8 +74,8 @@ public class Main extends Plugin {
                 }
             } else if (args.length == 1){
                 sb.append(makeTitle("items in use"));
-                for(Item i : items.keySet()){
-                    sb.append(i.name).append("\n");
+                for(String i : items.keySet()){
+                    sb.append(i).append("\n");
                 }
             }
 

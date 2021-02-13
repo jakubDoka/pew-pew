@@ -26,6 +26,7 @@ public class Shooter {
     public static final String config = dir + "config.json";
 
     public HashMap<UnitType, HashMap<Item, Weapon>> weapons = new HashMap<>();
+    public Config cfg = new Config();
 
     public Seq<Data>
         units = new Seq<>(),
@@ -99,10 +100,14 @@ public class Shooter {
             if(cfg == null) {
                 return;
             }
+
+            this.cfg = cfg;
             weapons = cfg.parse();
         } catch(IOException e) {
             Log.info("failed to parse config file: " + e.getMessage());
         } catch(Exception e) {
+            this.cfg.links = new HashMap<>();
+            this.cfg.def = new HashMap<>();
             Log.info("failed to load weapons: " + e.getMessage());
         }
     }
