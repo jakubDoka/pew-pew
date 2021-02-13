@@ -8,6 +8,8 @@ import arc.struct.*;
 import arc.util.*;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+
 import mindustry.content.*;
 import mindustry.entities.bullet.*;
 import mindustry.game.*;
@@ -24,6 +26,8 @@ public class Shooter {
     public static final String dir = "config/mods/pewpew/";
     public static final String errors = dir + "errors/";
     public static final String config = dir + "config.json";
+    public static final String configyaml = dir + "config.yaml";
+    private boolean yamlmode = false;
 
     public HashMap<UnitType, HashMap<Item, Weapon>> weapons = new HashMap<>();
     public Config cfg = new Config();
@@ -72,6 +76,9 @@ public class Shooter {
             units.filter(update);
 
             players.filter(d -> {
+                if(d.player == null) {
+                    return true;
+                }
                 d.unit = d.player.unit();
 
                 if(d.unit == null) {
@@ -90,17 +97,25 @@ public class Shooter {
                 return true;
             });
         });
-
         load();
     }
 
     public void load(){
+        if(yamlmode || (!new File(config).exists() && new File(configyaml).exists())) {
+            yamlmode = true;
+            load(configyaml);
+        } else {
+            yamlmode = false;
+            load(config);
+        }
+    }
+
+    public void load(String filename){
         try{
-            Config cfg = Util.load(config, Config.class);
+            Config cfg = Util.load(filename, Config.class);
             if(cfg == null) {
                 return;
             }
-
             this.cfg = cfg;
             weapons = cfg.parse();
         } catch(IOException e) {
@@ -110,6 +125,36 @@ public class Shooter {
             this.cfg.def = new HashMap<>();
             Log.info("failed to load weapons: " + e.getMessage());
         }
+    }
+
+    public void save(String filename){
+        try{
+            Util.save(filename, Config.class, this.cfg);
+
+        } catch(IOException e) {
+            Log.info("failed to parse config file: " + e.getMessage());
+        } catch(Exception e) {
+            this.cfg.links = new HashMap<>();
+            this.cfg.def = new HashMap<>();
+            Log.info("failed to load weapons: " + e.getMessage());
+        }
+    }
+
+    public boolean yamlmode(){
+        return yamlmode;
+    }
+
+    public void yamlmode(boolean mode){
+        if(mode) {
+            load(config);
+            save(configyaml);
+            new File(config).delete();
+        } else {
+            load(configyaml);
+            save(config);
+            new File(configyaml).delete();
+        }
+        yamlmode = mode;
     }
 
     // config represents game configuration
@@ -298,21 +343,48 @@ public class Shooter {
         }
 
         public static <T> T load(String filename, Class<T> type) throws IOException{
-            ObjectMapper mapper = new ObjectMapper();
+            boolean yaml = false;
+            if (filename.length() > 5 && filename.substring(filename.length()-5, filename.length()).toLowerCase().equals(".yaml")) {
+                yaml = true;
+            }
+
+            ObjectMapper mapper;
+            if(yaml) {
+                mapper = new ObjectMapper(new YAMLFactory());
+            } else {
+                mapper = new ObjectMapper();
+            }
+
+            makeFullPath(filename);
             File f = new File(filename);
             if(!f.exists()){
-                return save(filename, type);
+                return save(filename, type, null);
             }
             return mapper.readValue(f, type);
         }
 
-        public static <T> T save(String filename, Class<T> type) throws IOException{
-            ObjectMapper mapper = new ObjectMapper();
+        public static <T> T save(String filename, Class<T> type, Object object) throws IOException{
+            boolean yaml = false;
+            if (filename.length() > 5 && filename.substring(filename.length()-5, filename.length()).toLowerCase().equals(".yaml")) {
+                yaml = true;
+            }
+
+            ObjectMapper mapper;
+            if(yaml) {
+                mapper = new ObjectMapper(new YAMLFactory());
+            } else {
+                mapper = new ObjectMapper();
+            }
+
             makeFullPath(filename);
             File f = new File(filename);
             T obj;
             try{
-                obj = type.getDeclaredConstructor().newInstance();
+                if (object == null) {
+                    obj = type.getDeclaredConstructor().newInstance();
+                } else {
+                    obj = type.cast(object);
+                }
             }catch(Exception e){
                 e.printStackTrace();
                 Log.info("Please copy this error and open the issue with it on github.");
@@ -336,18 +408,18 @@ public class Shooter {
     public static class Logging {
         public static void log(Throwable t) {
             String ex = ExceptionUtils.readStackTrace(t);
-            SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH-mm-ss-SSS z");
+            SimpleDateFormat formatterDate= new SimpleDateFormat("yyyy-MM-dd z");
+            SimpleDateFormat formatterTime= new SimpleDateFormat("[HH-mm-ss-SSS]");
             java.sql.Date date = new java.sql.Date(System.currentTimeMillis());
-            File f = new File(errors+formatter.format(date));
+            File f = new File(errors+formatterDate.format(date) + ".txt");
             t.printStackTrace();
             try {
                 Util.makeFullPath(f.getAbsolutePath());
-                boolean create = f.createNewFile();
-                if(!create) {
-                    throw new IOException("log file on current time already existas which should not be possible");
+                if(!f.exists()) {
+                    f.createNewFile();
                 }
-                PrintWriter out = new PrintWriter(f.getAbsolutePath());
-
+                PrintWriter out = new PrintWriter(new FileOutputStream(f, true));
+                out.println(formatterTime.format(date));
                 out.println(ex);
                 out.close();
             } catch(IOException e) { e.printStackTrace();}
