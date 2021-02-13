@@ -18,6 +18,24 @@ Now `important thing to note` any unit that has items in it will be able to shoo
             "bulletsPerShot": 2,
             "ammoMultiplier": 4,
             "itemsPerScoop": 1
+        },
+        "scepterShotgun":{
+            "bullet": "scepter-1",
+            "inaccuracy": 10,
+            "damageMultiplier":0.5,
+            "reload": 2.0,
+            "bulletsPerShot": 40,
+            "ammoMultiplier": 1,
+            "itemsPerScoop": 10
+        },
+        "bulletBoost": {
+          "bullet": "self-1",
+          "inaccuracy": 0,
+          "damageMultiplier":1.0,
+          "reload": 0.2,
+          "bulletsPerShot": 1,
+          "ammoMultiplier": 1,
+          "itemsPerScoop": 1
         }
     },
     "links":{
@@ -28,7 +46,11 @@ Now `important thing to note` any unit that has items in it will be able to shoo
             "copper": "copperGun"
         },
         "gamma":{
-            "copper": "copperGun"
+            "copper": "copperGun",
+            "phaseFabric": "bulletBoost"
+        },
+        "scepter":{
+            "surgeAlloy": "scepterShotgun"
         }
     }
 }
@@ -38,7 +60,10 @@ In property `def` you can define a weapon and then in links you can link it with
 
 First is a `bullet` that specifies what kind of bullet this gun uses, in this case it's a `standardCopper` which is a most 
 basic bullet that `alfa` shoots. You can view list of available bullets with commandline command `pew-content bullets`.
-Bullets are not tested so if you find one that crashes the game, write an issue about it.
+Bullets are not tested so if you find one that crashes the game, write an issue about it. Bullet can also be chosen differently.
+Some units have unique weapons, and to use them in your weapon you have to use `unitName-weaponIndex` syntax. to view what units
+offer use `pew-content unit-weapons` command. You can also use `self-weaponIndex` to specify that weapon should use whatever
+unit using it is using.
 
 Then there is `inaccuracy`, if you set it to 180, weapon will shoot in random direction.
 

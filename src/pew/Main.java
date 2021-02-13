@@ -5,6 +5,8 @@ import mindustry.content.*;
 import mindustry.gen.*;
 import mindustry.mod.*;
 import mindustry.type.*;
+import mindustry.type.Weapon;
+import pew.Shooter.*;
 import pew.Shooter.*;
 
 import java.io.*;
@@ -54,7 +56,7 @@ public class Main extends Plugin {
                         player.sendMessage("this unit is not supported by config");
                         return;
                     }
-                } catch(NoSuchFieldException ex){
+                } catch(Exception ex){
                     player.sendMessage(ex.getMessage());
                     return;
                 }
@@ -67,7 +69,7 @@ public class Main extends Plugin {
                         player.sendMessage("this item is not supported by config");
                         return;
                     }
-                } catch(NoSuchFieldException ex) {
+                } catch(Exception ex) {
                     player.sendMessage(ex.getMessage());
                     return;
                 }
@@ -112,9 +114,31 @@ public class Main extends Plugin {
                 return listFields(Bullets.class);
             case "items":
                 return listFields(Items.class);
+            case "unit-weapons":
+                String comment = "If unit offers 3 weapons, you can use 'spectre-1' to " +
+                "'spectre-3' in place of bullet, mind that some weapons repeat as unit has one on each side.\n";
+                try{
+                    return comment + listUnitBullets();
+                }catch(IllegalAccessException e){
+                    return comment + "fatal error during reading content: " + e.getMessage();
+                }
             default:
                 return null;
         }
+    }
+
+    public static String listUnitBullets() throws IllegalAccessException{
+        StringBuilder sb = new StringBuilder();
+        for(Field f : UnitTypes.class.getFields()) {
+            UnitType ut = (UnitType)f.get(null);
+            sb.append(f.getName());
+            for(Weapon w : ut.weapons) {
+                sb.append(w.name).append(" ");
+            }
+            sb.append("\n");
+        }
+
+        return sb.toString();
     }
 
     public static <T> String listFields(Class<T> c) {

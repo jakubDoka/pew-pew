@@ -100,10 +100,10 @@ public class Shooter {
                 return;
             }
             weapons = cfg.parse();
-        } catch(NoSuchFieldException e) {
-            Log.info("failed to load weapons: " + e.getMessage());
         } catch(IOException e) {
             Log.info("failed to parse config file: " + e.getMessage());
+        } catch(Exception e) {
+            Log.info("failed to load weapons: " + e.getMessage());
         }
     }
 
@@ -126,19 +126,21 @@ public class Shooter {
         }};
 
         @JsonIgnore
-        public HashMap<UnitType, HashMap<Item, Weapon>> parse() throws NoSuchFieldException{
+        public HashMap<UnitType, HashMap<Item, Weapon>> parse() throws Exception {
             HashMap<UnitType, HashMap<Item, Weapon>> res = new HashMap<>();
             for(String unit : links.keySet()) {
                 UnitType ut = (UnitType)Util.getProp(UnitTypes.class, unit);
+
                 HashMap<Item, Weapon> inner = res.computeIfAbsent(ut, k -> new HashMap<>());
                 for(String item : links.get(unit).keySet()) {
                     Item i = (Item)Util.getProp(Items.class, item);
                     String defName = links.get(unit).get(item);
                     Stats stats = def.get(defName);
                     if(stats == null) {
-                        throw new NoSuchFieldException(String.format("%s does not exist in weapon definitions", defName));
+                        throw new Exception(String.format("%s does not exist in weapon definitions", defName));
                     }
-                    inner.put(i, new Weapon(stats, ut));
+
+                    inner.put(i, new Weapon(stats, ut, defName));
                 }
             }
             return res;
@@ -181,10 +183,21 @@ public class Shooter {
         // helper vectors to reduce allocations.
         static Vec2 h1 = new Vec2(), h2 = new Vec2(), h3 = new Vec2();
 
-        public Weapon(Stats stats, UnitType ut) throws NoSuchFieldException {
+        public Weapon(Stats stats, UnitType ut, String name) throws Exception {
             this.stats = stats;
 
-            this.bullet = (BulletType)Util.getProp(Bullets.class, stats.bullet);
+            try{
+
+                if(stats.bullet.contains("-")) {
+                    this.bullet = Util.getUnitBullet(stats.bullet, ut);
+                } else {
+                    this.bullet = (BulletType)Util.getProp(Bullets.class, stats.bullet);
+                }
+            } catch(Exception e) {
+                throw new Exception("weapon with name '"+name+"' is invalid: " + e.getMessage());
+            }
+
+
 
             // finding bullet with biggest range
             ut.weapons.forEach(w -> {
@@ -244,19 +257,39 @@ public class Shooter {
     }
 
     public static class Util {
-        public static <T> Object getProp(Class<T> target, String prop) throws NoSuchFieldException{
+        public static <T> Object getProp(Class<T> target, String prop) throws Exception {
             try{
                 return target.getField(prop).get(null);
             }catch(NoSuchFieldException ex){
-                throw new NoSuchFieldException(String.format(
-                "%s does not contain '%s', use 'content %s' to see the options",
-                target.getName(),
-                prop,
-                target.getName().toLowerCase().replace("type", "")
+                throw new Exception(String.format(
+                    "%s does not contain '%s', use 'content %s' to see the options",
+                    target.getSimpleName(),
+                    prop,
+                    target.getSimpleName().toLowerCase().replace("type", "")
                 ));
             }catch(IllegalAccessException ex){
                 throw new RuntimeException(ex);
             }
+        }
+
+        public static BulletType getUnitBullet(String ptr, UnitType ut) throws Exception {
+            String[] parts = ptr.split("-");
+            if(parts.length != 2) {
+                throw new Exception("the unit bullet has to be unit name, and weapon index separated by '-'");
+            }
+            if (!parts[0].equals("self")) {
+                ut = (UnitType)getProp(UnitTypes.class, parts[0]);
+            }
+            if(!Strings.canParsePositiveInt(parts[1])) {
+                throw new Exception("cannot parse " + parts[1] + " to integer");
+            }
+
+            int idx = Integer.parseInt(parts[1]) - 1;
+            if(idx >= ut.weapons.size || idx < 0) {
+                throw new Exception("the maximal weapon is " + ut.weapons.size + " and min is 1, you entered " + parts[1]);
+            }
+
+            return  ut.weapons.get(idx).bullet;
         }
 
         public static <T> T load(String filename, Class<T> type) throws IOException{
