@@ -244,7 +244,7 @@ public class Shooter {
 
             if(!bullet.collides) {
                 // h2 is already in state of vector from u.pos to u.aim and we only care about length
-                life = h2.len() / bullet.range(); // bullet is controlled by cursor
+                life = bullet.range() / h2.len(); // bullet is controlled by cursor
             }
 
             for(int i = 0; i < stats.bulletsPerShot; i++){
