@@ -149,7 +149,7 @@ public class Shooter {
             load(config);
             save(configyaml);
             new File(config).delete();
-        } 
+        }
         else {
             load(configyaml);
             save(config);
@@ -290,7 +290,7 @@ public class Shooter {
 
             if(!bullet.collides) {
                 // h2 is already in state of vector from u.pos to u.aim and we only care about length
-                life = bullet.range() / h2.len(); // bullet is controlled by cursor
+                life *= Math.min(h2.len() / bullet.range(), 1f) ; // bullet is controlled by cursor
             }
 
             for(int i = 0; i < stats.bulletsPerShot; i++){
