@@ -7,3 +7,4 @@ bin/main/*
 .project
 .classpath
 build.bat
+move.bat

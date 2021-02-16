@@ -19,6 +19,7 @@ ext{
 dependencies{
     implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.0.1'
+    compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.11.2'
     compileOnly "com.github.Anuken.Arc:arc-core:$mindustryVersion"
     compileOnly "com.github.Anuken.Mindustry:core:$mindustryVersion"
 }
