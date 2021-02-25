@@ -38,9 +38,19 @@ public class Shooter {
         garbage = new Seq<>();
 
     public Shooter() {
-        Logging.on(EventType.UnitCreateEvent.class, e -> units.add(garbage.pop(() -> new Data(e.unit))));
+        Logging.on(EventType.UnitCreateEvent.class, e -> {
+            Data data = garbage.pop(() -> new Data(e.unit));
+            data.unit = e.unit;
+            units.add(data);
+        });
 
-        Logging.on(EventType.PlayerJoin.class, e -> players.add(garbage.pop(() -> new Data(e.player))));
+        Logging.on(EventType.PlayerJoin.class, e -> {
+            Data data = garbage.pop(() -> null);
+            if (data == null) {
+                data = new Data(e.player);
+            }
+            players.add(data);
+        });
 
         Boolf<Data> update = d -> {
             Unit u = d.unit;
