@@ -291,7 +291,7 @@ public class Shooter {
             h1
             .set(original.range(), 0) // set length to range
             .rotate(h2.set(u.aimX, u.aimY).sub(u.x, u.y).angle()) // rotate to shooting direction
-            .add(h3.set(u.vel).scl(60f * Time.delta)); // add velocity offset
+            .add(h3.set(u.vel).scl(60f)); // add velocity offset
 
             // its math
             float vel = h1.len() / original.lifetime / bullet.speed;
