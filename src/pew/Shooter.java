@@ -48,6 +48,9 @@ public class Shooter {
             Data data = garbage.pop(() -> null);
             if (data == null) {
                 data = new Data(e.player);
+            } else {
+                data.player = e.player;
+                data.ammo = 0;
             }
             players.add(data);
         });
@@ -95,7 +98,7 @@ public class Shooter {
                     return true;
                 }
 
-                if(!d.player.con.isConnected()) {
+                if(!d.player.con.isConnected() && !d.player.isAdded()) {
                     garbage.add(d);
                     return false;
                 }
